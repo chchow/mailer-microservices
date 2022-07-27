@@ -2,6 +2,8 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "mailer": "apps/mailer",
+    "mails": "libs/mails",
     "rest-api": "apps/rest-api"
   }
 }
