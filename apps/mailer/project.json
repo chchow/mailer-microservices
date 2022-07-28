@@ -10,7 +10,10 @@
         "outputPath": "dist/apps/mailer",
         "main": "apps/mailer/src/main.ts",
         "tsConfig": "apps/mailer/tsconfig.app.json",
-        "assets": ["apps/mailer/src/assets"]
+        "assets": [
+          "apps/mailer/src/assets",
+          "apps/mailer/src/templates"
+        ]
       },
       "configurations": {
         "production": {
