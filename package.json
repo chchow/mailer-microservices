@@ -6,7 +6,8 @@
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
-    "dev": "nx run-many --target=serve --projects=rest-api,mailer --parallel"
+    "dev": "nx run-many --target=serve --projects=rest-api,mailer --parallel",
+    "build:all": "nx run-many --target=build --projects=rest-api,mailer --parallel"
   },
   "private": true,
   "dependencies": {

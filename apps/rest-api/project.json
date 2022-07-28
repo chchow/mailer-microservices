@@ -3,6 +3,16 @@
   "sourceRoot": "apps/rest-api/src",
   "projectType": "application",
   "targets": {
+    "deploy": {
+      "builder": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": [
+          "nx build rest-api",
+          "docker build -f ./apps/rest-api/Dockerfile . -t rest-api"
+        ],
+        "parallel": false
+      }
+    },
     "build": {
       "executor": "@nrwl/node:webpack",
       "outputs": ["{options.outputPath}"],
@@ -10,7 +20,8 @@
         "outputPath": "dist/apps/rest-api",
         "main": "apps/rest-api/src/main.ts",
         "tsConfig": "apps/rest-api/tsconfig.app.json",
-        "assets": ["apps/rest-api/src/assets"]
+        "assets": ["apps/rest-api/src/assets"],
+        "generatePackageJson": true
       },
       "configurations": {
         "production": {

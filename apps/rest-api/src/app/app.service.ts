@@ -8,6 +8,6 @@ export class AppService {
     const confirmUrl = "https://link.test?ey=testexample2";
     const emailAddress = "cchmailer08@gmail.com"
     this.client.emit({cmd: 'send-message'}, { emailAddress, confirmUrl }).subscribe();
-    return { message: 'Welcome to rest-api for mail service!' };
+    return { message: 'Welcome to rest-api for mail service! a test mail has been sent to cchmailer08@gmail.com' };
   }
 }
