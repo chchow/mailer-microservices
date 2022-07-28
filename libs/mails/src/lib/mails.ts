@@ -2,13 +2,13 @@
 //   return 'mails';
 // }
 
-export interface Mail {
+export interface MailDto {
   to: string;
   from: string;
   subject: string;
-  template: string;
-  // context: any;
+  text: string;
 }
 
 export const MAIL_QUEUE = "MAIL_QUEUE";
 export const CONFIRM_REGISTRATION = "CONFIRM_REGISTRATION";
+export const CUSTOM_MAIL = "CUSTOM_MAIL";

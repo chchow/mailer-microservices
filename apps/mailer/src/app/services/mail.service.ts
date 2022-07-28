@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Queue } from "bull";
 import { InjectQueue } from "@nestjs/bull";
-import { MAIL_QUEUE, CONFIRM_REGISTRATION } from '@mailer-microservices/mails';
+import { MAIL_QUEUE, CONFIRM_REGISTRATION, MailDto, CUSTOM_MAIL } from '@mailer-microservices/mails';
 
 @Injectable()
 export class MailService {
@@ -17,6 +17,17 @@ export class MailService {
       });
     } catch (error) {
       this._logger.error(`Error queueing registration email to user ${emailAddress}`);
+
+      throw error;
+    }
+  }
+  public async sendCustomEmail(mail: MailDto): Promise<void> {
+    try {
+      await this._mailQueue.add(CUSTOM_MAIL, {
+        mail
+      });
+    } catch (error) {
+      this._logger.error(`Error queueing custom email to user ${mail.to}`);
 
       throw error;
     }

@@ -3,7 +3,7 @@ import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } fr
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
-import { MAIL_QUEUE, CONFIRM_REGISTRATION } from '@mailer-microservices/mails';
+import { MAIL_QUEUE, CONFIRM_REGISTRATION, CUSTOM_MAIL, MailDto } from '@mailer-microservices/mails';
 
 @Injectable()
 @Processor(MAIL_QUEUE)
@@ -24,7 +24,6 @@ export class MailProcessor {
     );
 
     try {
-      console.log(this._mailerService);
       return this._mailerService.sendMail({
         to: job.data.emailAddress.emailAddress,
         from: this._configService.get('EMAIL_ADDRESS'),
@@ -35,6 +34,28 @@ export class MailProcessor {
     } catch {
       this._logger.error(
         `Failed to send confirmation email to '${job.data.emailAddress}'`
+      );
+    }
+  }
+  @Process(CUSTOM_MAIL) // here is the name of the executed process
+  public async customEmail(
+    job: Job<{ mail: {mail: MailDto} }>
+  ) {
+    this._logger.log(
+      `Sending confirm custom email to '${job.data.mail.mail.to}'`
+    );
+
+    try {
+      return this._mailerService.sendMail({
+        to: job.data.mail.mail.to,
+        from: this._configService.get('EMAIL_ADDRESS'),
+        subject: job.data.mail.mail.subject,
+        template: './custom_mail', // ! it must point to a template file name without the .hbs extension
+        context: { customMsg: job.data.mail.mail.text }, // here you pass the variables that you use in the hbs template
+      });
+    } catch {
+      this._logger.error(
+        `Failed to send confirmation email to '${job.data.mail.mail.to}'`
       );
     }
   }
