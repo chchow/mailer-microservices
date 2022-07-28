@@ -14,6 +14,10 @@ import { AppService } from './app.service';
       useFactory: () =>
         ClientProxyFactory.create({
           transport: Transport.REDIS,
+          options: {
+            host: 'redis',
+            port: 6379,
+          },
         }),
     },
   ],

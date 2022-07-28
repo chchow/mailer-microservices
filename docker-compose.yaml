@@ -1,0 +1,24 @@
+version: '3'
+services:
+  rest-api:
+    image: rest-api
+    environment:
+      - apiPath=http://api:3333
+    ports:
+      - '8080:3333'
+    volumes:
+      - logvolume01:/var/log
+    links:
+      - redis
+  mailer:
+    image: mailer
+    volumes:
+      - logvolume01:/var/log
+    links:
+      - redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+volumes:
+  logvolume01: {}

@@ -24,7 +24,7 @@ export class MailProcessor {
     );
 
     try {
-      // console.log(job);
+      console.log(this._mailerService);
       return this._mailerService.sendMail({
         to: job.data.emailAddress.emailAddress,
         from: this._configService.get('EMAIL_ADDRESS'),
