@@ -2,93 +2,60 @@
 
 # MailerMicroservices
 
-This project was generated using [Nx](https://nx.dev).
+Highly available emailing microservice.
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+## Getting Started
 
-🔎 **Smart, Fast and Extensible Build System**
+Basic requirements
+1. Nodejs 16+
+2. Docker installed
+3. Docker compose installed
 
-## Adding capabilities to your workspace
+Steps from setup to deployment:
+1. Clone the repository
+2. Install npm dependencies:
+  `npm install`
+3. Build and deploy rest-api service creating a docker image 'rest-api': 
+  `npx nx deploy rest-api`
+4. Build and deploy mailer service creating a docker image 'mailer': 
+  `npx nx deploy mailer`
+5. Start the services: 
+  `docker-compose up`
+6. Execute the call below to send mail:
+    - GET http://localhost:8080/ --> this will send a registration confirmation mail
+    - POST http://localhost:8080/sendmail body {to: xxx, from: xxx, subject: xxx, text: xxx} --> this will send a custom mail with body input.
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+## Architecture
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+The application consists of 3 services / components:
+- rest-api
+  - facilitate the api layer
+  - currently, only 2 calls are created:
+    - GET http://localhost:8080/ --> this will send a registration confirmation mail
+    - POST http://localhost:8080/sendmail body {to: xxx, from: xxx, subject: xxx, text: xxx} --> this will send a custom mail with body input.
+- mailer
+  - listens to event queue from rest-api
+  - queue mail based on type of mail and execute blocking mail sending operations
+  - the test smtp server is currently using mailgun and only 1 user are verfied with the account, namely cchmailer08@gmail.com
+  - if you wish to modify the smtp configuration, please make changes to apps/mailer/src/Dockerfile "Email Settings"
+- redis
+  - redis server is used as  medium of event queue handling via Pub/Sub method and list feature for mail queue sending
 
-Below are our core plugins:
+## Testing
+There are only a few unit test created especially in mailer:
+cd apps/mailer; jest
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+## Improvement points
+This repository was created with the following in mind with the short given amount of time:
+- high available services
+- execute blocking process without failing to accept new mail to be sent
+- simple services with function separation
+- without audit trailing of email sent except logging
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+Redis Pub/Sub method was used for simplicity purpose. However, this will contribute to an issue where the event is sent at-most-once, which means that in the event that mailer is down during an event published, mails could be failed to be sent as there are only 1 mailer running at a time.
 
-## Generate an application
+> Redis stream could be used to address this issue as we could practice a design pattern where we could store the last read event id either in file or in Redis hash. It is possible to pick up from where it was last processed. Redis stream works in an append only manner and keeps the event queue without deleting unless a range is provided.
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+There is a single point of failure where only one instance of mailer is running at a time + during peak hours email may take ages to clear as queue piles up.
 
-> You can use any of the plugins above to generate applications as well.
-
-When using Nx, you can create multiple applications and libraries in the same workspace.
-
-## Generate a library
-
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
-
-> You can also use any of the plugins above to generate libraries as well.
-
-Libraries are shareable across libraries and applications. They can be imported from `@mailer-microservices/mylib`.
-
-## Development server
-
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
-
-## Build
-
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
-
-Run `nx affected:test` to execute the unit tests affected by a change.
-
-## Running end-to-end tests
-
-Run `nx e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+> We could solve this by creating a kubernetes pool of mailers with a load balancer to accept the events and distributes among the pool or mailers. Combining Redis stream's Consumer group and it's PEL could easily be used to distribute and manage events published to the pool of mailers. Consumer groups event processing requests consumer to acknowledge if the event is processed completely. Hence, this will take care of the failure in processing or incorrect shutdown of the mailer.
