@@ -3,6 +3,16 @@
   "sourceRoot": "apps/mailer/src",
   "projectType": "application",
   "targets": {
+    "deploy": {
+      "builder": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": [
+          "nx build mailer",
+          "docker build -f ./apps/mailer/Dockerfile . -t mailer"
+        ],
+        "parallel": false
+      }
+    },
     "build": {
       "executor": "@nrwl/node:webpack",
       "outputs": ["{options.outputPath}"],
@@ -13,7 +23,8 @@
         "assets": [
           "apps/mailer/src/assets",
           "apps/mailer/src/templates"
-        ]
+        ],
+        "generatePackageJson": true
       },
       "configurations": {
         "production": {
