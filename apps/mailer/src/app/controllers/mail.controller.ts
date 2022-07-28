@@ -8,6 +8,7 @@ export class MailController {
 
   @EventPattern({ cmd: "send-message" })
   async sendConfirmationEmail(emailAddress: string, confirmUrl: string): Promise<void> {
+    console.log('sending confirmation email', emailAddress, confirmUrl);
     return this._mailService.sendConfirmationEmail(emailAddress, confirmUrl);
   }
 }
