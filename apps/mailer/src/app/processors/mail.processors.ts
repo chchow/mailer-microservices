@@ -17,19 +17,20 @@ export class MailProcessor {
 
   @Process(CONFIRM_REGISTRATION) // here is the name of the executed process
   public async confirmRegistration(
-    job: Job<{ emailAddress: string; confirmUrl: string }>
+    job: Job<{ emailAddress: {emailAddress: string; confirmUrl: string }}>
   ) {
     this._logger.log(
-      `Sending confirm registration email to '${job.data.emailAddress}'`
+      `Sending confirm registration email to '${job.data.emailAddress.emailAddress}'`
     );
 
     try {
+      // console.log(job);
       return this._mailerService.sendMail({
-        to: job.data.emailAddress,
+        to: job.data.emailAddress.emailAddress,
         from: this._configService.get('EMAIL_ADDRESS'),
         subject: 'Registration',
         template: './registration', // ! it must point to a template file name without the .hbs extension
-        context: { confirmUrl: job.data.confirmUrl }, // here you pass the variables that you use in the hbs template
+        context: { confirmUrl: job.data.emailAddress.confirmUrl }, // here you pass the variables that you use in the hbs template
       });
     } catch {
       this._logger.error(
